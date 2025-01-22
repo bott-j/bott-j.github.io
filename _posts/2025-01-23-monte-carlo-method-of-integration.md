@@ -389,7 +389,7 @@ plt.show()
 
 ![Paraboloid surface of the function to be integrated is steepest closer to the radius of the unit circel.](/assets/posts/monte-carlo-method-of-integration-8.png?raw=true){: width="50%"}
 
-We can find an analytical solution to this problem by changing to polar coordinates:
+We can find an analytical solution to this problem by changing to polar coordinates, where $$\theta$$ is angle and $$r$$ is the magnitude of the radius. In doing so the Pythagorean theorem, $$r^2 = x^2 + y^2$$, is used.
 
 $$
 \begin{align}
@@ -403,7 +403,7 @@ $$
 
 The analytical solution will be used to compare with the numerical solution calculated in Python.
 
-In rectangular coordinates, the function to be integrated is:
+In rectangular coordinates, the function to be integrated is defined:
 
 {% highlight python %}
 
@@ -498,6 +498,134 @@ In the plot below the Monte-Carlo estimate converges to 1.572 with an increasing
 
 In stratified sampling we wish to distribute the number of sample points available over the region of integration such that areas with higher variance are allocated a higher number of samples. This results in greater efficiency in the use of samples by obtaining a better estimate of the mean in areas where there is more detail. The MISER algorithm [[1]](#1) is an example of a recursive stratified sampling implementation. The stratified sampling algorithm presented here is based on the MISER algorithm however has some simplifications which will be explained.
 
+The code block below shows the implementation of the recursive stratified sampling algorithm.
+
+{% highlight python %}
+
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+import pandas as pd
+
+def divide_annulus(t):
+    """ Finds radius which divides an annulus into two equal volumes.  """
+    return np.sqrt((t[1]**2)/2 + (t[0]**2)/2)
+
+def estimate_polar(f, N, boundTheta, boundR, V):
+    """ Monte-Carlo estimate in polar coordinates. """
+    # Generate sample points
+    dfPoints = pd.DataFrame(
+        columns = ("theta", "r"), 
+        data = np.random.uniform((boundTheta[0],boundR[0]**2), (boundTheta[1],boundR[1]**2), (N, 2)))
+
+    # Transform R for evenly distributed density of points along radius
+    dfPoints["r"] = np.sqrt(dfPoints["r"])
+
+    # Use numpy vectorize calculation of function value 
+    dfPoints["value"] = np.vectorize(f)(dfPoints["theta"], dfPoints["r"])
+
+    return dfPoints["value"].mean()*V \
+            ,(V**2)*dfPoints["value"].var()/N \
+            ,dfPoints
+        
+def rss_polar(f, N, k, boundTheta, boundR, maxError, maxDepth, depth=1):
+    """ Recursive stratified sampling implementation. """
+    
+    # Calculate the volume of this sector of the annulus
+    V = (boundR[1]**2)*(abs(boundTheta[1] - boundTheta[0])/2) - (boundR[0]**2)*(abs(boundTheta[1] - boundTheta[0])/2)
+    
+    # If termination criteria not met yet
+    if(depth < maxDepth
+      and N > 4):
+        
+        # Sample for estimate of variance
+        dfSampleTheta1 = pd.DataFrame(
+            columns = ("theta", "r"), 
+            data = np.random.uniform((boundTheta[0],boundR[0]), (np.mean(boundTheta),boundR[1]), (k, 2)))
+        dfSampleTheta2 = pd.DataFrame(
+            columns = ("theta", "r"), 
+            data = np.random.uniform((np.mean(boundTheta),boundR[0]), (boundTheta[1],boundR[1]), (k, 2)))
+        dfSampleR1 = pd.DataFrame(
+            columns = ("theta", "r"), 
+            data = np.random.uniform((boundTheta[0],boundR[0]), (boundTheta[1],divide_annulus(boundR)), (k, 2)))
+        dfSampleR2 = pd.DataFrame(
+            columns = ("theta", "r"), 
+            data = np.random.uniform((boundTheta[0],divide_annulus(boundR)), (boundTheta[1],boundR[1]), (k, 2)))
+        
+        # Calculate values
+        dfSampleTheta1["value"] = np.vectorize(f)(dfSampleTheta1["theta"], dfSampleTheta1["r"])
+        dfSampleTheta2["value"] = np.vectorize(f)(dfSampleTheta2["theta"], dfSampleTheta2["r"])
+        dfSampleR1["value"] = np.vectorize(f)(dfSampleR1["theta"], dfSampleR1["r"])
+        dfSampleR2["value"] = np.vectorize(f)(dfSampleR2["theta"], dfSampleR2["r"])
+        
+        # Calculate the combined standard error of the samples
+        sample = pd.concat([dfSampleTheta1, dfSampleTheta2, dfSampleR1, dfSampleR2], axis=0)
+        sampleVariance = sample["value"].var()
+        errorSample = np.sqrt(sampleVariance / sample.shape[0]) * V
+        
+        # Error is a termination criteria
+        if(errorSample <= maxError):
+            valueFinal, errorFinal, dfPointsFinal = estimate_polar(f, N, boundTheta, boundR, V)
+        else:    
+            # Calculate variances
+            dfSampleTheta1Variance = dfSampleTheta1["value"].var()
+            dfSampleTheta2Variance = dfSampleTheta2["value"].var()
+            dfSampleR1Variance = dfSampleR1["value"].var()
+            dfSampleR2Variance = dfSampleR2["value"].var()
+            
+            # Choose the dimension to split on such that the sum of standard errors in two dimensions is reduced 
+            if((np.sqrt(dfSampleTheta1Variance) + np.sqrt(dfSampleTheta2Variance)) 
+               < (np.sqrt(dfSampleR1Variance) + np.sqrt(dfSampleR2Variance))):
+                # Split along Theta direction
+                Na = int(N*np.sqrt(dfSampleTheta1Variance)/(np.sqrt(dfSampleTheta1Variance)+np.sqrt(dfSampleTheta2Variance)))
+                Na = max(2, min(N-2, Na))
+                Nb = N - Na
+                valueSub1, errorSub1, dfPointsSub1 = rss_polar(f, Na, k, (boundTheta[0], np.mean(boundTheta)), boundR, maxError, maxDepth, depth+1)
+                valueSub2, errorSub2, dfPointsSub2 = rss_polar(f, Nb, k, (np.mean(boundTheta), boundTheta[1]), boundR, maxError, maxDepth, depth+1)  
+            else:
+                # Else split along R direction
+                Na = int(N*np.sqrt(dfSampleR1Variance)/(np.sqrt(dfSampleR1Variance)+np.sqrt(dfSampleR2Variance)))
+                Na = max(2, min(N-2, Na))
+                Nb = N - Na
+                valueSub1, errorSub1, dfPointsSub1 = rss_polar(f, Na, k, boundTheta, (boundR[0], divide_annulus(boundR)), maxError, maxDepth, depth+1)
+                valueSub2, errorSub2, dfPointsSub2 = rss_polar(f, Nb, k, boundTheta, (divide_annulus(boundR), boundR[1]), maxError, maxDepth, depth+1)
+                            
+            # Final estimate
+            meanSub1 = dfPointsSub1["value"].mean()
+            meanSub2 = dfPointsSub2["value"].mean()
+            errorFinal = errorSub1/4 + errorSub2/4
+            valueFinal = valueSub1 + valueSub2
+            dfPointsFinal = pd.concat([dfPointsSub1, dfPointsSub2], axis=0)
+
+    # Otherwise terminate here with a Monte-Carlo estimate of remaining points    
+    else: 
+        valueFinal, errorFinal, dfPointsFinal = estimate_polar(N, boundTheta, boundR, V)
+
+    # Return final values
+    return valueFinal, errorFinal, dfPointsFinal
+        
+{% endhighlight %}
+
+The estimate_polar() routine calculates the Monte-Carlo estimate for a function defined in polar coordinates over the sector of an annulus defined by bounds on angle $$\theta$$ and radius $$r$$. The rss_polar() routine recursively combines Monte-Carlo estimates up to a maximum depth and maximum error defined by maxError and maxDepth respectively. Each recursive call of the function returns an estimate of the integral for the region and it's standard error, together with a collection of points used in evaluating the sub-integral. In the implementation presented in this notebook an additional constraint is made which ensures $$N>=4$$ and both $$N_a\ge2$$ and $$N_b\ge2$$ on each call.
+
+Each sub-region of the integration is a sector of an annulus defined by bounds on angle $$\theta_0$$, $$theta_1$$ and bounds on radius $$r_0$$, $$r_1$$. The following method is used to split the annulus sector radially into equal volumes:
+
+$$
+\sqrt{\frac{r_0^2}{2} + \frac{r_1^2}{2}}
+$$
+
+As the sub-regions of integration are of equal volume, the sub-integral values for sub-regions $$A$$ and $$B$$ are combined as the sum of integral values for the sub-regions: 
+
+$$
+I_{final} = I_A + I_B
+$$
+
+And the standard error is calculated:
+
+$$
+\sigma_{final} = \frac{1}{4}\sigma_A + \frac{1}{4}\sigma_B
+$$
+
 Like the MISER algorithm, this implementation recursively divides the region of integration along one dimension. The first problem which arises is how to choose which dimension to split the region of integration along. In this implementation the dimension is chosen such that sum of standard deviations in each of the candidate sub-regions is minimized. While this approach is discussed in [[1]](#1), the MISER algorithm itself selects the dimension according to the split which minimizes the sum of a power of the difference between minimum and maximum function values in each of the sub-regions.  
 
 The second problem is how to allocate points between the sub-regions. In this implementation sub-regions are chosen such that they are of equal volume. The combined expectation of the function values from both sub-regions is then the mean of the expectations.
@@ -588,76 +716,59 @@ $$
 N_b = N - N_a 
 $$
 
-
-The estimate_polar() routine calculates the Monte-Carlo estimate for a function defined in polar coordinates over the sector of an annulus defined by bounds on angle $$\theta$$ and radius $$r$$. The rss_polar() routine recursively combines Monte-Carlo estimates up to a maximum depth and maximum error defined by maxError and maxDepth respectively. Each recursive call of the function returns an estimate of the integral for the region and it's standard error, together with a collection of points used in evaluating the sub-integral. In the implementation presented in this notebook an additional constraint is made which ensures $$N>=4$$ and both $$N_a\ge2$$ and $$N_b\ge2$$ on each call.
-
-Each sub-region of the integration is a sector of an annulus defined by bounds on angle $$\theta_0$$, $$theta_1$$ and bounds on radius $$r_0$$, $$r_1$$. The following method is used to split the annulus sector radially into equal volumes:
-
-$$
-\sqrt{\frac{r_0^2}{2} + \frac{r_1^2}{2}}
-$$
-
-As the sub-regions of integration are of equal volume, the sub-integral values for sub-regions $$A$$ and $$B$$ are combined as the sum of integral values for the sub-regions: 
-
-$$
-I_{final} = I_A + I_B
-$$
-
-And the standard error is calculated:
-
-$$
-\sigma_{final} = \frac{1}{4}\sigma_A + \frac{1}{4}\sigma_B
-$$
-
 This implementation also differs from the MISER algorithm as a constant number of sample points, $$k$$, is used in evaluating termination criteria and in determining the dimensional split, rather than a fraction of N as in [[1]](#1). A keyword argument, depth, is used by the recursive funciton to track recursive depth for termination criteria.
 
+In the following Python example the recursive stratified sampling method introduced above is used to find the Monte-Carlo estimate of the double integral from the previous double integral example. The termination criteria are set with a minimum standard error of 0.0001 and maximum depth of 10 for recursion. 
 
+{% highlight python %}
 
+# Maximum number of sample points
+N = 4400
 
-The following function is defined in Cartesian coordinates:
+# Unit circle
+boundTheta = (0, 2*np.pi)
+boundR = (0, 1)
 
-$$
-f(x,y) = (x^2 + y^2)^2
-$$
+# Termination Criteria
+maxError = 0.0001
+maxDepth = 10
 
-We would like to find an analytical solution for the definite integral:
+# Sample points for evaluating dimensional split and termination criteria
+k = 100
 
-$$
-I = \int\int_{D} (x^2+y^2)^2 \, dx \, dy
-$$
+calculatedIntegral, calculatedError, df = rss_polar(f, N, k, boundTheta, boundR, maxError, maxDepth)
+calculatedError = np.sqrt(calculatedError)
 
-Where, $$D$$, the domain will be the unit circle of radius 1. 
+{% endhighlight %}
 
-To find an analytical solution we can use the Pythagorean theorem, $$r^2 = x^2 + y^2$$, to redefine the function in terms of polar coordinates:
+Plotting the points and printing the Monte-Carlo estimate:
 
-$$
-f(\theta, r) = r^4
-$$
+{% highlight python %}
 
-Where $$\theta$$ is angle and $$r$$ is the magnitude of the radius.
+# Transform the data
+df["x"] = df["r"]*np.cos(df["theta"])
+df["y"] = df["r"]*np.sin(df["theta"])
 
-We can then integrate the function over the domain of the unit circle:
+plt.scatter(df["x"], df["y"], marker='.', alpha=0.2)
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("Integration Points of $(X^2+y^2)^2$")
+plt.show()
 
-$$
-\begin{align}
-I &= \int_0^{1}\int_{0}^{2\pi} r^4 \, r \, d\theta \, dr \\
-  &= \int_0^{1} r^5 \left[\theta + C\right]_{\theta=0}^{\theta=2\pi} \, dr \\
-  &= 2\pi\int_0^{1} r^5  \, dr \\
-  &= 2\pi \left[ \frac{1}{6}r^6 + C \right]_{r=0}^{r=1} \\ 
-  &= \frac{1}{3}\pi \\ 
-\end{align}
-$$
+# Analytical solution of the integral
+analyticalIntegral = np.pi/3
 
-Visually, the surface of the function to be integrated is shown below. 
+# Print the results 
+print(f"Estimate standard error: {calculatedError}")
+print(f"Calculated integral: {calculatedIntegral}")
+print(f"Analytical solution: {analyticalIntegral}")
+print(f"Percent error is: {(100*(calculatedIntegral-analyticalIntegral)/analyticalIntegral):.4f} %")
 
+{% endhighlight %}
 
-The following example uses the recursive stratified sampling method to perform the integration numerically. The termination criteria are set with a minimum standard error of 0.0001 and maximum depth of 10 for recursion. 
+From the plot of sample points we can see that most points are distributed along the radius of the circle which is where the function is steepest. For 4'400 points we get estimates with a precentage error which is in the order of magnitude of 0.01%, considerably less sample points than what would be required for a similar effort when using a plain Monte-Carlo estimate.
 
-
-From the plot of points we can see that most points are distributed along the radius of the circle which is where the function is steepest. For 4'400 points we get estimates with a precentage error which is in the order of magnitude of 0.01%, considerably less sample points than what would be required for a similar effort when using a plain Monte-Carlo estimate.
-
-
-
+![Value of the double integral converging with an increasing number of samples.](/assets/posts/monte-carlo-method-of-integration-7.png?raw=true){: width="50%"}
 
 # Python Notebook and GitHub Repository
 
