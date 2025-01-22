@@ -10,6 +10,16 @@ tags:
 
 As I plan to implement a Monte-Carlo localisation algorithm following recent work with the HLS-LFCD2 LiDAR module, I thought it would be useful to revise some Monte-Carlo applications. Monte-Carlo methods are numerical methods which use repeated random samples to solve problems which may otherwise be difficult to solve analytically. In this post I will provide some Python examples and mathematical derivations for the type of Monte-Carlo integration methods typically encountered in engineering and mathematics. 
 
+**Contents**
+* [Using a Monte-Carlo Method to Calculate $$ \pi $$](#using-a-monte-carlo-method-to-calculate-pi)
+* [The Monte-Carlo Estimator](#the-monte-carlo-estimator)
+* [Standard Error of the Monte-Carlo Estimator](#standard-error-of-the-monte-carlo-estimator)
+* [Using the Monte-Carlo Estimator to Calculate Definite Integrals](#using-the-monte-carlo-estimator-to-calculate-definite-integrals)
+* [Using the Monte-Carlo Estimator to Calculate Double Integrals](#using-the-monte-carlo-estimator-to-calculate-double-integrals)
+* [Recursive Stratified Sampling](#recursive-stratified-sampling)
+* [Python Notebook and GitHub Repository](#python-notebook-and-github-repository)
+* [References](#references)
+
 # Using a Monte-Carlo Method to Calculate $$ \pi $$
 
 To start with, a problem often seen in introductory Monte-Carlo texts is the numerical calculation of $$ \pi $$. We can calculate the value of Pi from the number of randomly sampled points within a two-dimensional plane that fall inside a circle. If we sample $$ N $$ such points from a uniform distribution, within a square range enclosing a circle, we would expect the probability of a point falling within the circle to depend on the ratio of the area of the circle and the square. Likewise, the ratio of area might be found from the probability of a point being found within the circle, which is how we estimate the value of $$ \pi $$.
