@@ -1,0 +1,45 @@
+---
+layout: default
+title: Tags
+description: Blog content organised by tags.
+---
+
+<h1>{{ page.title }}</h1>
+
+<!-- % include tags_all.html % -->
+
+{% comment %} Create an empty array. {% endcomment %} 
+{% assign site_tags = "" | split: '' %}
+
+{% comment %} Populate array with tags. {% endcomment %} 
+{% for tag in site.tags %}
+  {% assign site_tag = tag | first %}
+  {% assign site_tags = site_tags | push: site_tag %}
+{% endfor %}
+
+{% comment %} Sort tags alphabetically. {% endcomment %} 
+{% assign site_tags_alphabetical = site_tags | sort_natural %}
+
+{% comment %} For each tag, display posts. {% endcomment %} 
+{% assign prev_tag = "" %}
+{% for sorted_tag in site_tags_alphabetical %}
+    {% assign tag = sorted_tag | strip %}
+    {% assign current_tag = tag %}
+    {% if current_tag != prev_tag %}
+        <!-- Create tag pages for current character -->
+        {% assign prev_tag = current_tag %}
+        <!-- Create new tag page, hide by default -->
+        {% assign count = site.tags[current_tag].size %}
+        <h2 style="margin-top:33px" id="{{ current_tag | slugify }}">{{ current_tag }} ({{count}})</h2>
+    {% endif %}
+    <!-- Display Tags starting with current character -->
+    <ul>
+        {% for post in site.tags[tag] %}
+        <li>
+            <a href="{{ post.url }}">{{ post.title }}</a> ({{ post.date | date_to_string }})
+        </li>
+        {% endfor %}
+    </ul>
+    <!-- End last page -->
+    {% if forloop.last %}{% endif %}
+{% endfor %}
