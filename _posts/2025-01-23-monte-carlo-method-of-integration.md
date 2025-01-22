@@ -340,7 +340,7 @@ plt.title("Monte Carlo Integration of f(.)")
 plt.show()
 {% endhighlight %}
 
-We see the calculated value converging towards a value of 0.7251, which is the value we would expect from a numerical solution of this definite integral. 
+The calculated value at the end of the iterations is 0.7248, which is close to a value we might expect from a numerical solution of this definite integral. 
 
 ![Plot of calculated value vs. number of samples.](/assets/posts/monte-carlo-method-of-integration-5.png?raw=true){: width="50%"}
 
@@ -490,7 +490,7 @@ plt.title("Monte Carlo Integration of f(.)")
 plt.show()
 {% endhighlight %}
 
-In the plot below the Monte-Carlo estimate converges to 1.572 with an increasing number of samples, which is very close to the analytical solution of 1.571.  
+In the plot below the Monte-Carlo estimate has reached 1.0476 for this sample size, which is very close to the analytical solution of 1.0472.  
 
 ![Value of the double integral converging with an increasing number of samples.](/assets/posts/monte-carlo-method-of-integration-6.png?raw=true){: width="50%"}
 
@@ -766,7 +766,7 @@ print(f"Percent error is: {(100*(calculatedIntegral-analyticalIntegral)/analytic
 
 {% endhighlight %}
 
-From the plot of sample points we can see that most points are distributed along the radius of the circle which is where the function is steepest. For 4'400 points we get estimates with a precentage error which is in the order of magnitude of 0.01%, considerably less sample points than what would be required for a similar effort when using a plain Monte-Carlo estimate.
+From the plot of sample points we can see that most points are distributed along the radius of the circle which is where the function is steepest. For 4'400 points we get estimates with a precentage error which is in the order of magnitude of 0.05%, considerably less sample points than what would be required for a similar effort when using a plain Monte-Carlo estimate.
 
 ![Value of the double integral converging with an increasing number of samples.](/assets/posts/monte-carlo-method-of-integration-7.png?raw=true){: width="50%"}
 
