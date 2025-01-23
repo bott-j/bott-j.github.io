@@ -1,0 +1,6 @@
+<span>
+Topics:&nbsp; 
+{% for tag in page.tags %}
+&nbsp;<a href="/topics.html#{{ tag | slugify }}">[&nbsp;{{ tag }}&nbsp;]</a>&nbsp;
+{% endfor %}
+</span>
