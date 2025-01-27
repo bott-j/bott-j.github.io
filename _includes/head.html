@@ -4,7 +4,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {%- seo -%}
   <link rel="stylesheet" href="{{ "/assets/main.css" | relative_url }}">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" media="(prefers-color-scheme:dark)">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" media="(prefers-color-scheme:no-preference)">
+  <link rel="icon" href="/favicon_light.svg" type="image/svg+xml" media="(prefers-color-scheme:light)">
   {%- feed_meta -%}
   {%- if jekyll.environment == 'production' and site.google_analytics -%}
     {%- include google-analytics.html -%}
