@@ -1,10 +1,10 @@
 <svg height="144" width="144" xmlns="http://www.w3.org/2000/svg">
   <style>
     circle {
-      fill: #F1F6FC;
+      fill: black;
     }
     polygon {
-      fill: black;
+      fill: #F1F6FC;
     }
   </style>
   <circle cx="72" cy="72" r="72" style="stroke:none" />
