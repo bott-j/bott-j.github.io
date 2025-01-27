@@ -1,0 +1,20 @@
+<svg height="144" width="144" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    circle {
+      fill: black;
+    }
+    polygon {
+      fill: #F1F6FC;
+    }
+    @media (prefers-color-scheme: dark) {
+      circle {
+        fill: #F1F6FC;
+      }
+      polygon {
+        fill: black;
+      }
+    }
+  </style>
+  <circle cx="72" cy="72" r="72" style="stroke:none" />
+  <polygon points="42,82 82,10 72,62 102,62 62,132 72,82 42,82" style="stroke:none" />
+</svg>
