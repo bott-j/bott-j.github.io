@@ -37,7 +37,6 @@ sys.path.append('../')
 from estimator import PowerNetwork
 
 def test_StateEstimateLine():
-    """Verify filterpoint() method deadband filter functionality."""
 
     # Create power network object
     net = PowerNetwork()
@@ -59,6 +58,8 @@ def test_StateEstimateLine():
     # Estimate states
     states = net.stateEstimate()
 
+    # Correct type
+    assert(type(states) is dict)
     # Correct length
     assert(len(states) == 2)
 
@@ -80,7 +81,7 @@ The following lines check the type and dimension of the return value from this m
 
 {% highlight python %}
     # Correct type
-    assert(type(states) == dict)
+    assert(type(states) is dict)
     # Correct length
     assert(len(states) == 2)
 {% endhighlight %}
@@ -125,9 +126,15 @@ In this case we can see that the exit code of the process was 0, indicating no e
 
 # Linting with Ruff
 
-Ruff is a linting tool for python which is used to check code quality by identifying issues in code style or potential coding errors. Ruff works similarly to Pytest, to use Ruff we need to specify which files should be checked. 
+Ruff is a linting tool for python which is used to check code quality by identifying issues in code style or potential coding errors.
 
-For example, we can run Ruff to lint a single file by specifying the check command and a filename:
+Install ruff with the package installer for Python:
+
+```
+pip install pytest
+```
+
+Ruff works similarly to Pytest, to use Ruff we need to specify which files should be checked. For example, we can run Ruff to lint a single file by specifying the check command and a filename:
 
 ```
 >ruff check test_PowerNetwork.py
@@ -152,7 +159,7 @@ Repeating Ruff after resolving the type-comparison shows all checks passed:
 All checks passed!
 ```
 
-Instead of a filename, we could also pass "." to check all files in the current directory.
+We could also pass "." to Ruff in place of a filename to check all files in the current directory.
 
 # Configuring a Workflow with Github Actions
 
@@ -163,7 +170,7 @@ For this example, we will create a unit testing workflow which will run when a p
 The first key we will define is "name", which sets the name of the workflow, which for this example will be "Test Workflow".
 
 ```
-name: Test Main
+name: Test Workflow
 ```
 
 Next we can set the condition to run the workflow under the 'on' keyword:
@@ -179,7 +186,7 @@ We will create the "jobs" key and define "test-job" as a job which wil run under
 
 ```
 jobs:
-  test:
+  test-job:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -197,7 +204,7 @@ For the "strategy" key we set "matrix", which causes the workflow to be run unde
 The steps key specifies each of the steps to be run in the job. The first item in the list, "uses", is a repository checkout action. The second item named "Setup Python" sets up the Python version to be used in the testing environment using the setup python action.
 
 ```
-    steps:
+  steps:
       - uses: actions/checkout@v3
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -208,7 +215,7 @@ The steps key specifies each of the steps to be run in the job. The first item i
 Next, the dependencies are installed in Python. The "run" key specifies the command to run within the environment. The two commands upgrade PIP and install the package versions specified in the "requirements.txt" file which we will talk more about later.
 
 ```
-      - name: Install dependencies
+ - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -217,7 +224,7 @@ Next, the dependencies are installed in Python. The "run" key specifies the comm
 Finally, the testing and linting steps to be carried out are specified. 
 
 ```
-      - name: Test python
+    - name: Test python
         run: |
           pytest -vv
           pytest --cov --cov-fail-under=90
