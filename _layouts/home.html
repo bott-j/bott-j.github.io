@@ -21,6 +21,9 @@ layout: default
             {{ post.title | escape }}
           </a>
         </h3>
+        {%- if post.image -%}
+          <img src="{{- post.image | relative_url -}}" class="preview-image">
+        {%- endif -%}
         {%- if site.show_excerpts -%}
           {{ post.excerpt }} 
           <a href="{{ post.url | relative_url }}">Read more...</a>
