@@ -9,3 +9,16 @@
         letter-spacing: .1rem;
         text-transform: uppercase;
 }
+
+.preview-image {
+  width: 82pt;
+  height: 82pt;
+  margin-top: 5pt;
+  margin-left: 5pt;
+  float: right;
+  object-fit: cover;
+}
+
+.preview-text {
+  text-align: justify;
+}
