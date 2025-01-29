@@ -22,11 +22,11 @@ layout: default
           </a>
         </h3>
         {%- if post.image -%}
-          <div><img src="{{- post.image | relative_url -}}" class="preview-image"></div>
+          <img src="{{- post.image | relative_url -}}" class="preview-image">
         {%- endif -%}
         {%- if site.show_excerpts -%}
-          <div class="preview-text">{{ post.excerpt }} 
-          <a href="{{ post.url | relative_url }}">Read more...</a></div>
+          <span class="preview-text">{{ post.excerpt }} 
+          <a href="{{ post.url | relative_url }}">Read more...</a></span>
         {%- endif -%}
       </li>
       {%- endfor -%}
