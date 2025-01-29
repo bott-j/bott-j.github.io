@@ -6,6 +6,7 @@ tag:
 - Software Development
 - Unit Testing 
 - DevOps
+image: /assets/posts/unit-testing-python-on-github/unit-testing-python-on-github.png
 ---
 
 GitHub Actions is GitHub's platform for automating software workflows for continuous integration (CI) and continuous deployment (CD). We can use GitHub actions together with tools such as Pytest and Ruff for automated testing as part of a continuous integration process. In this post, I will explain how to use Pytest and Ruff for unit testing in Python, and how to automate this with GitHub actions as a branch protection rule in order to protect repositories from the effects of regression by enforcing test completion prior to merging of pull requests. 

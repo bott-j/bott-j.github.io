@@ -3,6 +3,7 @@ layout: post
 title: Jekyll Tags in Minima 2.5
 tags: 
 - Jekyl 
+image: /assets/posts/jekyll-tags-in-minima-2-5/jekyll-tags-in-minima-2-5.png
 ---
 Tagging is a feature of blogs which allows posts to be grouped by a common topic. Jekyll is the static site creation software used to build this blog, and while Jekyll supports tagging the Minima 2.5 theme in use does not provide functionality to display tags. This post explains how to use custom liquid scripting to extend the Minima 2.5 HTML templates to display post tags and create a custom tag index for a blog.   
 

@@ -6,6 +6,7 @@ tags:
 - Mathematics
 - Python
 - Statistics
+image: /assets/posts/monte-carlo-integration-in-python/monte-carlo-integration.png
 ---
 
 As I plan to implement a Monte-Carlo localisation algorithm following recent work with the HLS-LFCD2 LiDAR module, I thought it would be useful to revise some Monte-Carlo applications. Monte-Carlo methods are numerical methods which use repeated random samples to solve problems which may otherwise be difficult to solve analytically. In this post I will provide some Python examples and mathematical derivations for the type of Monte-Carlo integration methods typically encountered in engineering and mathematics. 

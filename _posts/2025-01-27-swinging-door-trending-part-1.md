@@ -5,6 +5,7 @@ tags:
 - Algorithms
 - Python
 - SCADA 
+image: /assets/posts/swinging-door-trending-part-1/swinging-door-trending-part-1.png
 ---
 
 Time-series data may be sampled at a constant rate, such is the case with polling, by some event at irregular intervals, such as when a change occurs. When the value being measured is changing rapidly or sampled at a very fast rate, the quantity of samples being accumulated could become very large. This presents challenges for retention of time-series data within databases, as rapidly sampled data requires greater storage space. It is often the case that polling at a rate which is much faster than the process being measured provides no additional useful information, or that small fluctuations in the time-series data are of no interest. Time-series compression algorithms can be applied to reduce the quantity of samples in exchange for loss of some detail.  
